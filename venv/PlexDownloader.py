@@ -2,6 +2,9 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import subprocess
+import wget
+
+
 
 
 def get_url():
@@ -24,7 +27,7 @@ def get_url():
     json_Dictionary_Raw = {}
     index = 0
     for section in site_json['computer']['Linux']['releases']:
-        json_Dictionary_Raw[i] = section
+        json_Dictionary_Raw[index] = section
         index += 1
 
     #At this point there's 6 lines in dict_First. We need the second line to get loaded into another dictionary
@@ -33,7 +36,36 @@ def get_url():
     json_Dictionary_Trimmed = json_Dictionary_Raw[1]
     return json_Dictionary_Trimmed['url']
 address = get_url()
+
+
+#All this does is grab the file from the known address
 def wget_url(address):
+    subprocess.run(["wget",address])
+
+
+#Function to see if there's an updated file to download
+def check_If_New_Url(address):
+    #Open a text file with the most recent version that's been downloaded
+    checkfile = open("currenturl.txt")
+    #If it's the same as the old version, return true
+    if address == checkfile.read():
+        checkfile.close()
+        return True
+    #Otherwise, overwrite the old address and return false so we know to continue
+    else:
+        checkfile = open("currenturl.txt", "w")
+        checkfile.write(address)
+        checkfile.close()
+        return False
+
+
+if check_If_New_Url(address) == True:
+    exit(1)
+else:
+    wget_url(address)
+
+
+
 
 
 
