@@ -60,8 +60,8 @@ def get_Installer_Name(address):
     seperator = "/debian/"
     return address.partition(seperator)[2]
 
-def dkpg_Install_File(installer):
-    subprocess.run(["dkpg -i", installer])
+def dpkg_Install_File(installer):
+    subprocess.run(["dpkg -i", installer])
     subprocess.run(["rm", installer])
 
 
@@ -73,7 +73,7 @@ if check_If_New_Url(address) == True:
 else:
     # There's a new address, so a new installer.
     wget_url(address)
-    dkpg_Install_File(installer)
+    dpkg_Install_File(installer)
     exit(2)
 
 
