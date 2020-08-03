@@ -4,7 +4,8 @@ import json
 import subprocess
 import config
 import os
-
+import time
+start_time = time.time()
 
 def get_url():
     # I don't have the slightest idea of what I'm doing with dictionaries
@@ -42,47 +43,61 @@ def wget_url(address):
 
 # Function to see if there's an updated file to download
 def check_If_New_Url(address):
+    soup = BeautifulSoup(page.content, 'html.parser')
+    site_json = json.loads(soup.text)
+    # load the first dictionary
+    json_Dictionary_Raw = {}
+    index = 0
+    for section in site_json['computer']['Linux']['releases']:
+        json_Dictionary_Raw[index] = section
+        index += 1
 
+    # At this point there's 6 lines in dict_First. We need the second line to get loaded into another dictionary
+    # That way we can grab the URL key from that line
+    json_Dictionary_Trimmed = {}
+    json_Dictionary_Trimmed = json_Dictionary_Raw[1]
+    return json_Dictionary_Trimmed['url']
+
+    # Function to see if there's an updated file to download
+
+
+def check_If_New_Url(address):
     # Open a text file with the most recent version that's been downloaded
-    checkfile = open("currenturl.txt","w+")
+    checkfile = open("currenturl.txt")
     # If it's the same as the old version, return true
     if address == checkfile.read():
         checkfile.close()
+        print("Worked!")
         return True
     # Otherwise, overwrite the old address and return false so we know to continue
     else:
+        checkfile.close()
+        checkfile = open("currenturl.txt", "w")
         checkfile.write(address)
         checkfile.close()
         return False
+
 
 def get_Installer_Name(address):
     # Strip out the last bit of the address that contains the filename, then return
     seperator = "/debian/"
     return address.partition(seperator)[2]
 
-def dpkg_Install_File(installer):
-    subprocess.run(["dpkg -i", installer])
-    subprocess.run(["rm", installer])
 
+def dpkg_Install_File(installer):
+    subprocess.run(["dpkg", "-i", installer])
+    subprocess.run(["rm", installer])
 
 address = get_url()
 installer = get_Installer_Name(address)
 if check_If_New_Url(address) == True:
     # There isn't a new address, so no new installer. Program can exit
+    print("--- %s seconds ---" % (time.time() - start_time))
     exit(1)
+
 else:
     # There's a new address, so a new installer.
     wget_url(address)
     dpkg_Install_File(installer)
+    print("--- %s seconds ---" % (time.time() - start_time))
     exit(2)
-
-
-
-
-
-
-
-
-
-
-
